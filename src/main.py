@@ -20,12 +20,19 @@ async def lifespan(app: FastAPI):
 # Initialize the FastAPI app with the lifespan table generator
 app = FastAPI(title="My Scalable App", lifespan=lifespan)
 
-# Get the absolute path to the directory containing main.py
+# Get the absolute directory where main.py actually lives
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Mount static files and initialize Jinja2 templates
-app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
-templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
+# BULLETPROOF FIX: Dynamically ensure folders exist so Starlette never crashes
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+os.makedirs(STATIC_DIR, exist_ok=True)
+
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
+os.makedirs(TEMPLATES_DIR, exist_ok=True)
+
+# Mount the verified directories safely
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 # Main Home Page Route
 @app.get("/", response_class=HTMLResponse)
