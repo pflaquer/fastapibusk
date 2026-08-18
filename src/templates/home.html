@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>FastAPI + HTMX</h1>
+    <p>Welcome to your server-side application.</p>
+    
+    <!-- HTMX triggers a POST request and replaces the inner HTML of #message-box -->
+    <button hx-post="/clicked" hx-target="#message-box" hx-swap="innerHTML">
+        Click Me!
+    </button>
+    
+    <div id="message-box" style="margin-top: 20px; font-weight: bold; color: green;"></div>
+{% endblock %}
