@@ -1,19 +1,25 @@
 import os
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.ext.asyncio import AsyncSession
+from .database import get_db
 
-app = FastAPI(title="My Scalable App")
+app = FastAPI()
 
-# Get absolute path to the directory containing main.py
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# Mount static files and initialize Jinja2 templates
-app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    # This renders home.html and passes the required request context
-    return templates.TemplateResponse("home.html", {"request": request, "title": "Welcome"})
+    return templates.TemplateResponse("home.html", {"request": request, "title": "Home"})
+
+# This endpoint handles the HTMX call and returns a raw HTML fragment
+@app.post("/clicked", response_class=HTMLResponse)
+async def clicked_handler(db: AsyncSession = Depends(get_db)):
+    # You can perform lightning-fast async database actions here:
+    # result = await db.execute(select(User))
+    
+    # We return a tiny piece of HTML. HTMX stitches it directly into the page!
+    return "<span>⚡ Dynamic server-side content loaded asynchronously!</span>"
